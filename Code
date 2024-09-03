@@ -1,0 +1,85 @@
+import sqlite3
+import tkinter as tk
+from tkinter import messagebox
+
+conn = sqlite3.connect('inventory.db')
+cursor = conn.cursor()
+
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS products (
+   id INTEGER PRIMARY KEY,
+   name TEXT NOT NULL,
+   quantity INTEGER NOT NULL,
+   price REAL NOT NULL
+)
+''')
+
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS inventory (
+   product_id INTEGER,
+   quantity INTEGER,
+   FOREIGN KEY (product_id) REFERENCES products (id)
+)
+''')
+
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS sales (
+   id INTEGER PRIMARY KEY,
+   product_id INTEGER,
+   quantity_sold INTEGER,
+   sale_sate TEXT,
+   FOREIGN KEY (product_id) REFERENCES products(id)
+)
+''')
+
+conn.commit()
+
+root = tk.Tk()
+root.title("INVENTORY MANAGEMENT SYSTEM")
+
+root.geometry("600x400")
+
+def add_products():
+    name = entry_name.get()
+    quantity = entry_quantity.get()
+    price =entry_price.get()
+
+    cursor.execute("INSERT INTO products (name, quantity, price) VALUES (?, ?, ?)", (name, quantity, price))
+    conn.commit()
+    messagebox.showinfo("Sucess", "Product added successfully")
+
+label_name = tk.Label(root, text="Product Name")
+label_name.pack()
+
+entry_name = tk.Entry(root)
+entry_name.pack()
+
+label_quantity = tk.Label(root, text="Quantity")
+label_quantity.pack()
+
+entry_quantity = tk.Entry(root)
+entry_quantity.pack()
+
+label_price = tk.Label(root, text="Price")
+label_price.pack()
+
+entry_price = tk.Entry(root)
+entry_price.pack()
+
+btn_add = tk.Button(root, text="Add Product",
+command = add_products)
+btn_add.pack()
+
+def show_products():
+    cursor.execute("SELECT * FROM products")
+    rows = cursor.fetchall()
+
+    for row in rows:
+        print(row)
+
+btn_show = tk.Button(root, text="Show Products",
+command=show_products)
+btn_show.pack()
+
+
+root.mainloop()
